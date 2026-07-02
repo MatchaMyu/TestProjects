@@ -37,11 +37,20 @@ X Virtual paging initialized
 
 X Page fault handler / halt screen
 
+X Memory Management (memcpy, memset)
+
+X String management (strcpy, strlen)
+
+X Graphic settings enabled
+
+X Bootable in graphic OR text depending on boot startup.
+
+X Timer fixed to work with graphics AND VGA
+
+X Bad apple runs! (Will not be in final build)
+
 NEXT:
-Page fault 
-Memory management.
-Advanced SHELL commands. (Changing color of text?)
-Graphic management (Basic. 320x200)
+
 Hardware Identifiers (Basic, does not have to USE them, just IDENTIFY them)
 DOOM Port. (GOAL. genericdoom)
 
