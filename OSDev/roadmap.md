@@ -37,6 +37,7 @@ X Virtual paging initialized
 
 X Page fault handler / halt screen
 
+<<<<<<< HEAD
 X Editing Keyboard timing
 
 X Bad Apple Runs
@@ -46,6 +47,24 @@ X Importing Doom
 X Added Various LIBs that are typical of most OSes that I was lacking.
 
 X DOOM RUNS VIA GENERICDOOM PORTAL!
+=======
+X Memory Management (memcpy, memset)
+
+X String management (strcpy, strlen)
+
+X Graphic settings enabled
+
+X Bootable in graphic OR text depending on boot startup.
+
+X Timer fixed to work with graphics AND VGA
+
+X Bad apple runs! (Will not be in final build)
+
+NEXT:
+
+Hardware Identifiers (Basic, does not have to USE them, just IDENTIFY them)
+DOOM Port. (GOAL. genericdoom)
+>>>>>>> 56a48369d1a87a1eec0ca45df9680fa5f49b6283
 
 LONG TERM:
 Whatis hardware command (Detects current hardware signatures)

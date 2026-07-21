@@ -25,3 +25,7 @@ build/
 *.o
 *.elf
 *.iso
+
+# === Removed for possible copyright issues. Placed for functionality testing. ===
+badapple.bin
+doom.wad
