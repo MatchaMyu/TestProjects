@@ -6,17 +6,14 @@
 #include "heap.h"
 #include "console.h"
 #include "graphics.h"
+#include "app.h"
+#include "apps/baimage/badapple.h"
+#include "timer.h"
+#include <string.h>
+
+//IMPLEMENT IDEAS: turn the massive long table of if/then/else into a command table.
 
 extern int shell_row;
-
-int strcmp(const char *a, const char *b) { //Technically compares wrong.
-    while (*a && *b) {
-        if (*a != *b) return 0;
-        a++;
-        b++;
-    }
-    return (*a == *b);
-}
 
 //Command list
 void cmd_version(void) {
@@ -131,7 +128,6 @@ static void cmd_heaptest(void) {
     console_write("=== HEAP TEST END ===\n");
 }
 
-
 //Process command list
 void process_command(char *input) {
     char *args = input;
@@ -149,33 +145,57 @@ void process_command(char *input) {
         args++;
     }
 
-    if (strcmp(input, "version")) {
+    if (strcmp(input, "version") == 0) {
         cmd_version();
     } 
 
-    else if (strcmp(input, "echo")) {
+    else if (strcmp(input, "echo") == 0) {
         cmd_echo(args);
     }
 
-    else if (strcmp(input, "clear")) {
+    else if (strcmp(input, "clear") == 0) {
         cmd_clear();
     } 
 
-    else if (strcmp(input, "heap")) {
+    else if (strcmp(input, "heap") == 0) {
     cmd_heaptest();
     return; 
     }
 
-    else if (strcmp(input, "app")) {
+    else if (strcmp(input, "app") == 0) {
         console_write("Starting app...\n");
-
-        run_test_app();
+        cmd_clear();
+        //doom_test();
 
         console_write("App exited cleanly.\n");
         return;
     }
+    else if (strcmp(input, "doom") == 0) {
+        console_write("Starting Doom...\n");
+        cmd_clear();
+        shell_set_active(0);
+        doomgeneric_Create(0, NULL);
 
-    else if (strcmp(input, "mem")) {
+        while (1)
+        {
+            doomgeneric_Tick();
+        }
+
+        shell_set_active(1);
+
+        console_write("Doom exited.\n");
+        return;
+    }
+    else if (strcmp(input, "badapple") == 0) {
+    badapple_main();
+    return;
+    }
+    else if (strcmp(input, "sleep") == 0) {
+    sleep_test();
+    return;
+    }
+
+    else if (strcmp(input, "mem") == 0) {
     mem_stats_t stats;
     char buf[32];
 
@@ -203,7 +223,7 @@ void process_command(char *input) {
     console_print_uint(stats.largest_free_block);
     console_write("\n");
 
-    } else if (strcmp(input, "heap")) {
+    } else if (strcmp(input, "heap") == 0) {
     char buf[32];
     uint32_t start = heap_get_start();
     uint32_t end   = heap_get_end();
@@ -233,7 +253,7 @@ void process_command(char *input) {
 
     return;
     }//Panic command
-     else if (strcmp(input, "panic")) {
+     else if (strcmp(input, "panic") == 0) {
 	panic("Manual Pony Prompted Panic", 0);
 	return;
 	}

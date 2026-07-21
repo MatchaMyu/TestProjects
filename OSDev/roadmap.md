@@ -37,13 +37,15 @@ X Virtual paging initialized
 
 X Page fault handler / halt screen
 
-NEXT:
-Page fault 
-Memory management.
-Advanced SHELL commands. (Changing color of text?)
-Graphic management (Basic. 320x200)
-Hardware Identifiers (Basic, does not have to USE them, just IDENTIFY them)
-DOOM Port. (GOAL. genericdoom)
+X Editing Keyboard timing
+
+X Bad Apple Runs
+
+X Importing Doom
+
+X Added Various LIBs that are typical of most OSes that I was lacking.
+
+X DOOM RUNS VIA GENERICDOOM PORTAL!
 
 LONG TERM:
 Whatis hardware command (Detects current hardware signatures)

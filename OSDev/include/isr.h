@@ -19,4 +19,5 @@ void register_interrupt_handler(uint8_t n, isr_t handler);
 void page_fault_handler(regs_t* r);
 
 void panic(const char* msg, regs_t* r); // Free to remove when adding a panic.c
+void gfx_panic(const char* msg, regs_t* r); 
 extern volatile int kernel_panicking; //Also free to remove when adding a panic.c

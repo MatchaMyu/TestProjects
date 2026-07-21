@@ -9,6 +9,18 @@ void draw_uptime(void);
 
 int shell_row = 8; //This will need to be changed
 
+int shell_active = 1;
+
+void shell_set_active(int active)
+{
+    shell_active = active;
+}
+
+int shell_is_active(void)
+{
+    return shell_active;
+}
+
 //For clear command
 void shell_clear(void) {
     for (int row = 8; row <= 23; row++) {

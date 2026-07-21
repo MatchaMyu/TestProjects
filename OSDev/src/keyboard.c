@@ -2,13 +2,89 @@
 #include "gfx_shell.h"
 #include "vga.h"
 #include "ports.h"
+#include "shell/console.h"
 #include <stdint.h>
+#include "serial.h"
 
 
 static int shift_pressed = 0;
 static char input_buffer[256];
 static int input_pos = 0;
 static int input_done = 0;
+
+#define KEYBOARD_EVENT_QUEUE_SIZE 64
+
+typedef struct
+{
+    uint8_t scancode;
+    uint8_t pressed;
+    uint8_t extended;
+} KeyboardEvent;
+
+static KeyboardEvent keyboard_event_queue[KEYBOARD_EVENT_QUEUE_SIZE];
+
+static volatile uint32_t keyboard_event_read = 0;
+static volatile uint32_t keyboard_event_write = 0;
+
+static void keyboard_push_event(
+    uint8_t scancode,
+    uint8_t pressed,
+    uint8_t extended
+)
+{
+    uint32_t next =
+        (keyboard_event_write + 1) % KEYBOARD_EVENT_QUEUE_SIZE;
+
+    /*
+     * Queue full. Drop the newest event rather than overwrite
+     * an event Doom has not read yet.
+     */
+    if (next == keyboard_event_read)
+    {
+        return;
+    }
+
+    keyboard_event_queue[keyboard_event_write].scancode = scancode;
+    keyboard_event_queue[keyboard_event_write].pressed = pressed;
+    keyboard_event_queue[keyboard_event_write].extended = extended;
+
+    keyboard_event_write = next;
+}
+
+int keyboard_pop_event(
+    uint8_t *scancode,
+    int *pressed,
+    int *extended
+)
+{
+    if (keyboard_event_read == keyboard_event_write)
+    {
+        return 0;
+    }
+
+    KeyboardEvent event =
+        keyboard_event_queue[keyboard_event_read];
+
+    keyboard_event_read =
+        (keyboard_event_read + 1) % KEYBOARD_EVENT_QUEUE_SIZE;
+
+    if (scancode)
+    {
+        *scancode = event.scancode;
+    }
+
+    if (pressed)
+    {
+        *pressed = event.pressed;
+    }
+
+    if (extended)
+    {
+        *extended = event.extended;
+    }
+
+    return 1;
+}
 
 void keyboard_reset_buffer(void) {
     input_pos = 0;
@@ -92,65 +168,113 @@ static char apply_shift(char c)
 
 void keyboard_handler(void)
 {
-    uint8_t scancode = inb(0x60);
+    static uint8_t extended_prefix = 0;
 
-    // Shift pressed
-    if (scancode == 0x2A || scancode == 0x36) {
-        shift_pressed = 1;
+    uint8_t raw_scancode = inb(0x60);
+
+    /*
+     * Extended keys such as arrows send 0xE0 first,
+     * followed by their actual scancode.
+     */
+    if (raw_scancode == 0xE0)
+    {
+        extended_prefix = 1;
         return;
     }
 
-    // Shift released
-    if (scancode == 0xAA || scancode == 0xB6) {
-        shift_pressed = 0;
+    uint8_t pressed =
+        (raw_scancode & 0x80) == 0;
+
+    uint8_t scancode =
+        raw_scancode & 0x7F;
+
+    uint8_t is_extended =
+        extended_prefix;
+
+    extended_prefix = 0;
+
+    /*
+     * Record both presses and releases for programs such as Doom.
+     */
+    keyboard_push_event(
+        scancode,
+        pressed,
+        is_extended
+    );
+
+    /*
+     * Handle Shift state for normal shell typing.
+     */
+    if (!is_extended &&
+        (scancode == 0x2A || scancode == 0x36))
+    {
+        shift_pressed = pressed;
         return;
     }
 
-    // Ignore key releases
-    if (scancode & 0x80) {
+    /*
+     * The shell only processes ordinary key presses.
+     *
+     * Releases and extended keys have already been placed
+     * in the event queue, so the shell can safely ignore them.
+     */
+    if (!pressed || is_extended)
+    {
         return;
     }
 
-    if (scancode >= 128) {
+    if (scancode >= 128)
+    {
         return;
     }
 
-    // Handle Enter
-    if (scancode == 0x1C) {
+    /*
+     * Enter
+     */
+    if (scancode == 0x1C)
+    {
         input_buffer[input_pos] = '\0';
         input_done = 1;
-        // optional: move cursor to next line or print newline behavior
-        //gfx_shell_input_char('\n');
         console_putc('\n');
         return;
     }
 
-    // Handle Backspace
-    if (scancode == 0x0E) {
-        if (input_pos > 0) {
+    /*
+     * Backspace
+     */
+    if (scancode == 0x0E)
+    {
+        if (input_pos > 0)
+        {
             input_pos--;
             input_buffer[input_pos] = '\0';
             console_putc('\b');
         }
+
         return;
     }
-
 
     char c = scancode_to_ascii[scancode];
 
-    if (c == 0) {
+    if (c == 0)
+    {
         return;
     }
 
-    if (shift_pressed) {
+    if (shift_pressed)
+    {
         c = apply_shift(c);
     }
 
-
-    if (input_pos < 255) {
-	input_buffer[input_pos++] = c;
-	input_buffer[input_pos] = '\0';
-	console_putc(c);
+    if (input_pos < 255)
+    {
+        input_buffer[input_pos++] = c;
+        input_buffer[input_pos] = '\0';
+        console_putc(c);
     }
+}
 
+void keyboard_clear_events(void)
+{
+    keyboard_event_read = keyboard_event_write;
 }

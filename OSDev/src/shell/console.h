@@ -15,5 +15,6 @@ void console_print_hex32(uint32_t value);
 void console_putc(char c);
 void console_print_uint(uint32_t text);
 void console_clear(void);
+console_mode_t console_get_mode(void);
 
 #endif

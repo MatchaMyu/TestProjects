@@ -1,5 +1,9 @@
 #include "heap.h"
 #include "isr.h"
+#include <string.h>
+#include <stdint.h>
+
+#include "shell/console.h"
 
 #define MIN_SPLIT_SIZE 8 //Defines minimum split size
 #define HEAP_CANARY 0xDEADBEEF
@@ -119,13 +123,13 @@ static void coalesce_free_blocks(void) {
 }
 
 //kmalloc
-void* kmalloc(uint32_t size) {
+void* kmalloc(size_t size) {
     if (size == 0) return 0;
 
     if (size > 0xFFFFFFFF - sizeof(uint32_t) - 7) return 0;
 
-    uint32_t requested_size = size;
-    uint32_t aligned_size = (size + sizeof(uint32_t) + 7) & ~7;
+    uint32_t requested_size = (uint32_t)size;
+    uint32_t aligned_size = (requested_size + sizeof(uint32_t) + 7) & ~7;
 
     block_header_t* block = find_free_block(aligned_size);
 
@@ -135,7 +139,8 @@ void* kmalloc(uint32_t size) {
         block->requested_size = requested_size;
 
         void* user_ptr = (void*)((uint32_t)block + sizeof(block_header_t));
-        uint32_t* canary = (uint32_t*)((uint32_t)user_ptr + requested_size);
+        uint32_t canary_offset = (requested_size + 3) & ~3;
+        uint32_t* canary = (uint32_t*)((uint32_t)user_ptr + canary_offset);
         *canary = HEAP_CANARY;
 
         return user_ptr;
@@ -160,13 +165,13 @@ void* kmalloc(uint32_t size) {
     }
 
     void* user_ptr = (void*)((uint32_t)block + sizeof(block_header_t));
-    uint32_t* canary = (uint32_t*)((uint32_t)user_ptr + requested_size);
+    uint32_t canary_offset = (requested_size + 3) & ~3;
+    uint32_t* canary = (uint32_t*)((uint32_t)user_ptr + canary_offset);
     *canary = HEAP_CANARY;
 
     return user_ptr;
 
 }
-
 //kfree
 void kfree(void* ptr) {
     if (!ptr) return;
@@ -174,8 +179,11 @@ void kfree(void* ptr) {
     block_header_t* block =
         (block_header_t*)((uint32_t)ptr - sizeof(block_header_t));
 
+    uint32_t canary_offset =
+        (block->requested_size + 3) & ~3;
+
     uint32_t* canary =
-        (uint32_t*)((uint32_t)ptr + block->requested_size);
+        (uint32_t*)((uint32_t)ptr + canary_offset);
 
     if (*canary != HEAP_CANARY) {
         panic("Heap overflow detected", 0);
@@ -227,4 +235,65 @@ void mem_get_stats(mem_stats_t* stats) {
 
         current = current->next;
     }
+}
+
+void* malloc(size_t size)
+{
+    return kmalloc((uint32_t)size);
+}
+
+void free(void* ptr)
+{
+    kfree(ptr);
+}
+
+void* realloc(void* ptr, size_t new_size)
+{
+    if (ptr == NULL)
+        return malloc(new_size);
+
+    if (new_size == 0) {
+        free(ptr);
+        return NULL;
+    }
+
+    block_header_t* old_block =
+        (block_header_t*)((uint32_t)ptr - sizeof(block_header_t));
+
+    if (old_block->magic != ALLOC_MAGIC || old_block->free) {
+        panic("Invalid realloc detected", 0);
+    }
+
+    uint32_t old_size = old_block->requested_size;
+
+    void* new_ptr = malloc(new_size);
+    if (!new_ptr)
+        return NULL;
+
+    uint32_t copy_size = old_size < new_size ? old_size : new_size;
+    memcpy(new_ptr, ptr, copy_size);
+
+    free(ptr);
+
+    return new_ptr;
+}
+
+void* calloc(size_t count, size_t size)
+{
+    if (count == 0 || size == 0)
+        return NULL;
+
+    // Optional overflow check
+    if (count > SIZE_MAX / size)
+        return NULL;
+
+    size_t total = count * size;
+
+    void* ptr = malloc(total);
+    if (!ptr)
+        return NULL;
+
+    memset(ptr, 0, total);
+
+    return ptr;
 }

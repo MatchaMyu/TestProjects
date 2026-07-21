@@ -11,6 +11,9 @@ static uint32_t fb_height = 0;
 static uint32_t fb_pitch = 0;
 static uint8_t fb_bpp = 0;
 
+#define FONT_WIDTH  8
+#define FONT_HEIGHT 8
+
 #define SHELL_X 16
 #define SHELL_Y 32
 static int cursor_x = SHELL_X;
@@ -68,6 +71,10 @@ void gfx_draw_char(int x, int y, char c, uint32_t color) {
             }
         }
     }
+}
+
+void gfx_draw_char_cell(int col, int row, char c, uint32_t color) {
+    gfx_draw_char(col * FONT_WIDTH, row * FONT_HEIGHT, c, color);
 }
 
 void gfx_draw_string(int x, int y, const char *s, uint32_t color) {

@@ -10,6 +10,10 @@ void console_set_mode(console_mode_t mode) {
     current_console_mode = mode;
 }
 
+console_mode_t console_get_mode(void) {
+    return current_console_mode;
+}
+
 void console_write(const char* text) {
     if (current_console_mode == CONSOLE_MODE_GFX) {
         gfx_shell_print(text); //GFX Text
@@ -42,7 +46,7 @@ void console_putc(char c) {
 
 void console_clear(void) {
     if (current_console_mode == CONSOLE_MODE_GFX) {
-        gfx_clear(0x000000);
+        gfx_shell_clear(0x000000);
     } else {
         shell_clear();
     }

@@ -4,6 +4,7 @@
 #include "kernel.h"
 #include "timer.h"
 #include "vga.h"
+#include "shell/console.h"
 
 #define PIT_COMMAND  0x43
 #define PIT_CHANNEL0 0x40
@@ -37,7 +38,14 @@ void timer_init(uint32_t frequency)
     register_interrupt_handler(32, timer_callback);
 }
 
-void draw_uptime(void)
+void sleep_test(void)
+{
+    console_write("Before sleep");
+    sleep_ms(1000);
+    console_write("After sleep ");
+}
+
+void draw_uptime(void) //NOTE: THIS IS ONLY DRAWING IN VGA!
 {
     uint32_t hours   = g_seconds / 3600;
     uint32_t minutes = (g_seconds % 3600) / 60;
@@ -52,4 +60,40 @@ void draw_uptime(void)
     vga_print_at(":", 0x0F, 13, 0);
 
     vga_print_uint_at(seconds, 0x0F, 14, 0);
+}
+
+
+void sleep_ticks(uint32_t ticks)
+{
+    uint32_t start = g_ticks;
+
+    while ((uint32_t)(g_ticks - start) < ticks)
+    {
+        asm volatile("sti; hlt");
+    }
+}
+
+void sleep_ms(uint32_t ms)
+{
+    uint32_t ticks;
+
+    if (ms == 0)
+    {
+        return;
+    }
+
+    ticks = ms / 10;
+
+    if ((ms % 10) != 0)
+    {
+        ticks++;
+    }
+
+    sleep_ticks(ticks);
+}
+
+//Getter for timer exposure
+uint32_t timer_get_ticks_ms(void)
+{
+    return g_ticks * 10;
 }

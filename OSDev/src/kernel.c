@@ -114,7 +114,7 @@ if (mbi->flags & MULTIBOOT_INFO_FRAMEBUFFER) {
     vga_print_hex32_cursor((uint32_t)mbi->framebuffer_addr);
     vga_print("\n");
 }
-
+    timer_init(100);
 int graphics_enabled = gfx_init(mbi); //Graphics checker in gfx
 
 if (graphics_enabled) {
@@ -123,14 +123,19 @@ if (graphics_enabled) {
 } else {
     console_set_mode(CONSOLE_MODE_VGA);
     vga_clear(0x0F);
-    timer_init(100);
+
     draw_boot_screen();
     draw_uptime();
     shell_run();
 }
 
     // halt forever
-    for (;;) { __asm__ __volatile__("hlt"); }
+    while (1)
+    {
+        gfx_shell_process_pending();
+
+        __asm__ volatile ("hlt");
+    }
 
 }
 
