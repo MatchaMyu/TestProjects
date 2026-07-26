@@ -3,10 +3,8 @@
 #include "timer.h"
 
 //UNCOMMONT FOR THE REAL BAD APPLE BIN
-extern uint8_t _binary_src_apps_baimage_badapple_bin_start[];
+//extern uint8_t _binary_src_apps_baimage_badapple_bin_start[];
 
-//COMMENT OUT FOR BAD APPLE
-//extern uint8_t _binary_src_apps_baimage_badapple_demo_bin_start[];
 
 #define BA_SCALE 3
 #define BA_OFFSET_X 20
@@ -52,17 +50,23 @@ static void draw_frame_1bit(uint8_t* frame, uint32_t width, uint32_t height) {
 void badapple_main(void) {
 
     //COMMENT IN FOR BAD APPLE
+    /*
     uint8_t* data = _binary_src_apps_baimage_badapple_bin_start;
-
-    //COMMENT OUT FOR BAD APPLE
-    //uint8_t* data = _binary_src_apps_baimage_badapple_demo_bin_start;
-
     uint32_t width       = read_u32_le(data + 8);
     uint32_t height      = read_u32_le(data + 12);
     uint32_t frame_count = read_u32_le(data + 16);
 
     uint32_t frame_bytes = (width * height) / 8;
     uint8_t* frames = data + 20;
+    */
+    
+    //Garbage data passed on. This WILL Produce garbage. Made for sake of compiling easier
+    uint8_t* data = 0;
+    uint8_t* width = 12;
+    uint8_t* height = 16;
+    uint8_t* frame_count = 2;
+    uint32_t frame_bytes = 3;
+    uint8_t* frames = 2;
 
     if (frame_count == 0 || width == 0 || height == 0) {
         return;

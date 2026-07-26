@@ -37,41 +37,15 @@ X Virtual paging initialized
 
 X Page fault handler / halt screen
 
-<<<<<<< HEAD
-X Editing Keyboard timing
+X Several doomgeneric.c headers/files imports.
 
-X Bad Apple Runs
+X Missing Libs implemented.
 
-X Importing Doom
+X !!!GENERICDOOM RUNS!!!!
 
-X Added Various LIBs that are typical of most OSes that I was lacking.
-
-X DOOM RUNS VIA GENERICDOOM PORTAL!
-=======
-X Memory Management (memcpy, memset)
-
-X String management (strcpy, strlen)
-
-X Graphic settings enabled
-
-X Bootable in graphic OR text depending on boot startup.
-
-X Timer fixed to work with graphics AND VGA
-
-X Bad apple runs! (Will not be in final build)
-
-NEXT:
-
+LONG TERM NEXT GOAL:
+Normalize the C library (w3_schools includes various functions with commands not implemented yet)
+USB Identifiers (Mostly just keyboard)
 Hardware Identifiers (Basic, does not have to USE them, just IDENTIFY them)
-DOOM Port. (GOAL. genericdoom)
->>>>>>> 56a48369d1a87a1eec0ca45df9680fa5f49b6283
-
-LONG TERM:
 Whatis hardware command (Detects current hardware signatures)
 File system
-Super Mario Brothers
-
-What is NOT needed:
-These would make things too complex.
-
-Advanced GUI is a bit much. Command prompt similar style screen works, so long as it can launch DOOM. (Many OSes are capable of doing this without a GUI)

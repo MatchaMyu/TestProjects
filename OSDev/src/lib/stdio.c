@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include "apps/doomgeneric/doomheaders/resources/doom1_wad.h"
+//#include "apps/doomgeneric/doomheaders/resources/doom1_wad.h"
+#include "apps/doomgeneric/doomheaders/resources/doom1_wad_dummy.h"
 
 #define SEEK_SET 0
 #define SEEK_CUR 1

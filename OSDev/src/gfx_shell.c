@@ -1,5 +1,7 @@
 // gfx_shell.c
 //the commands.c file takes BOTH this and VGA.
+//This is basically the GFX version of what VGA is.
+
 #include <stdint.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -24,12 +26,6 @@
 #define CHAR_H 8
 
 #define MAX_INPUT 128
-
-static uint8_t* fb = 0;
-static uint32_t fb_width = 0;
-static uint32_t fb_height = 0;
-static uint32_t fb_pitch = 0;
-static uint8_t fb_bpp = 0;
 
 static int cursor_x = SHELL_X;
 static int cursor_y = SHELL_Y;
@@ -112,7 +108,10 @@ void gfx_shell_print_hex32_at(uint32_t value, uint32_t color, int col, int row) 
 }
 
 void gfx_shell_init(void) {
-    gfx_clear(0x202020);
+
+    console_write("Reached Shell INIT!!!\n");
+
+   //gfx_clear(0x202020);
 
     gfx_fill_rect(8, 8, 624, 464, 0x303030);
     gfx_shell_draw_rect(8, 8, 624, 464, 0xFFFFFF);
@@ -122,6 +121,9 @@ void gfx_shell_init(void) {
 
     gfx_shell_print("EquineOS Graphical Shell\n");
     gfx_shell_print("> ");
+
+    console_write("Finished Shell INIT!!!\n");
+
 }
 
 
@@ -454,9 +456,6 @@ static int vsnprintf(
                         '-'
                     );
 
-                    /*
-                     * This avoids overflowing when value == INT_MIN.
-                     */
                     magnitude = (uint32_t)(-(value + 1)) + 1;
                 }
                 else
@@ -488,17 +487,11 @@ static int vsnprintf(
 
             case '\0':
             {
-                /*
-                 * A trailing '%' is malformed. Stop safely.
-                 */
                 goto finished;
             }
 
             default:
             {
-                /*
-                 * Preserve unknown specifiers visibly.
-                 */
                 buffer_putchar(
                     buffer,
                     buffer_size,

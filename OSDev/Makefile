@@ -1,5 +1,10 @@
 # MyuOS Makefile
 
+#NOTICE: For the doom_wad1.h file, the file used is a dummy which WILL NOT EXECUTE PROPERLY.
+#You can find this in the stdio.h file. If you add your own doom.wad, you can change the comment to #include it.
+
+#BadApple ALSO uses a dummy file. You can find the makefile command here which simply changes the build location to ensure proper compiling.
+
 ASM      = nasm
 CC       = gcc
 LD       = ld
@@ -127,8 +132,7 @@ OBJS = $(BUILD_DIR)/boot.o \
        $(BUILD_DIR)/w_main.o \
        $(BUILD_DIR)/w_wad.o \
        $(BUILD_DIR)/wi_stuff.o \
-       $(BUILD_DIR)/w_file_stdc.o \
-       $(BUILD_DIR)/doom_test.o
+       $(BUILD_DIR)/w_file_stdc.o
 
 all: $(KERNEL) $(ISO_OUT)
 
@@ -220,9 +224,6 @@ $(BUILD_DIR)/graphics.o: src/graphics.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/font8x8.o: src/font8x8.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/doom_test.o: src/apps/doom_test.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/gfx_shell.o: src/gfx_shell.c | $(BUILD_DIR)
@@ -492,16 +493,15 @@ $(BUILD_DIR)/badapple_app.o: src/apps/baimage/badapple_app.c | $(BUILD_DIR)
 #You can provide your own, otherwise for now a dummy file converts.
 #TO FIX: Uncomment below, comment out the dummy file, and fix badapple_app.c
 
-
-$(BUILD_DIR)/badapple_bin.o: src/apps/baimage/badapple.bin | $(BUILD_DIR)
-	objcopy -I binary -O elf32-i386 -B i386 \
-	--rename-section .data=.rodata,alloc,load,readonly,data,contents \
-	$< $@
-
-#$(BUILD_DIR)/badapple_bin.o: src/apps/baimage/badapple_demo.bin | $(BUILD_DIR)
+#$(BUILD_DIR)/badapple_bin.o: src/apps/baimage/badapple.bin | $(BUILD_DIR)
 #	objcopy -I binary -O elf32-i386 -B i386 \
 #	--rename-section .data=.rodata,alloc,load,readonly,data,contents \
 #	$< $@
+
+$(BUILD_DIR)/badapple_bin.o: src/apps/baimage/badapple_demo.bin | $(BUILD_DIR)
+	objcopy -I binary -O elf32-i386 -B i386 \
+	--rename-section .data=.rodata,alloc,load,readonly,data,contents \
+	$< $@
 
 
 clean:
@@ -515,7 +515,7 @@ re: clean all
 #Run
 run: clean
 	$(MAKE) BOOT_SRC=src/boot.s $(ISO_OUT)
-	qemu-system-i386 -m 256M -cdrom $(ISO_OUT) -boot d -no-reboot -no-shutdown -serial stdio -vga std -display gtk
+	qemu-system-i386 -m 256M -cdrom $(ISO_OUT) -boot d -no-reboot -no-shutdown -serial stdio -vga std
 
 
 run-text: BOOT_SRC = src/boot_text.s

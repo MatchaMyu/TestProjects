@@ -8,6 +8,7 @@
 #include "graphics.h"
 #include "app.h"
 #include "apps/baimage/badapple.h"
+#include "apps/doomgeneric/doomheaders/doomgeneric.h"
 #include "timer.h"
 #include <string.h>
 

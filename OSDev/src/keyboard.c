@@ -166,16 +166,43 @@ static char apply_shift(char c)
     }
 }
 
+void keyboard_init(void)
+{
+    uint8_t config;
+
+    while (inb(0x64) & 2);
+
+    // Ask controller for config byte
+    outb(0x64, 0x20);
+
+    while (!(inb(0x64) & 1));
+
+    config = inb(0x60);
+
+    // Enable IRQ1
+    config |= 0x01;
+
+    // Write config byte
+    while (inb(0x64) & 2);
+
+    outb(0x64, 0x60);
+
+    while (inb(0x64) & 2);
+
+    outb(0x60, config);
+
+    // Enable keyboard port
+    while (inb(0x64) & 2);
+
+    outb(0x64, 0xAE);
+}
+
 void keyboard_handler(void)
 {
     static uint8_t extended_prefix = 0;
 
     uint8_t raw_scancode = inb(0x60);
 
-    /*
-     * Extended keys such as arrows send 0xE0 first,
-     * followed by their actual scancode.
-     */
     if (raw_scancode == 0xE0)
     {
         extended_prefix = 1;
@@ -193,18 +220,12 @@ void keyboard_handler(void)
 
     extended_prefix = 0;
 
-    /*
-     * Record both presses and releases for programs such as Doom.
-     */
     keyboard_push_event(
         scancode,
         pressed,
         is_extended
     );
 
-    /*
-     * Handle Shift state for normal shell typing.
-     */
     if (!is_extended &&
         (scancode == 0x2A || scancode == 0x36))
     {
@@ -212,12 +233,6 @@ void keyboard_handler(void)
         return;
     }
 
-    /*
-     * The shell only processes ordinary key presses.
-     *
-     * Releases and extended keys have already been placed
-     * in the event queue, so the shell can safely ignore them.
-     */
     if (!pressed || is_extended)
     {
         return;
@@ -228,9 +243,6 @@ void keyboard_handler(void)
         return;
     }
 
-    /*
-     * Enter
-     */
     if (scancode == 0x1C)
     {
         input_buffer[input_pos] = '\0';
@@ -239,9 +251,6 @@ void keyboard_handler(void)
         return;
     }
 
-    /*
-     * Backspace
-     */
     if (scancode == 0x0E)
     {
         if (input_pos > 0)

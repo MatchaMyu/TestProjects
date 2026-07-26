@@ -57,7 +57,9 @@ isr_t interrupt_handlers[256] = {0};
 
 void register_interrupt_handler(uint8_t n, isr_t handler)
 {
+    console_write("Registering IRQ\n: ");
     interrupt_handlers[n] = handler;
+    console_write("Registered IRQ\n");
 }
 
 void isr_common_handler(regs_t* r)

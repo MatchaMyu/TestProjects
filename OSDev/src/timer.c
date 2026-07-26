@@ -31,11 +31,22 @@ void timer_init(uint32_t frequency)
 
     uint32_t divisor = PIT_BASE_FREQUENCY / frequency;
 
+
+    console_write("Before command");
     outb(PIT_COMMAND, 0x36);
+    console_write("After command");
+
+    console_write("Before low byte");
     outb(PIT_CHANNEL0, divisor & 0xFF);
+    console_write("Before after low byte");
+
+
     outb(PIT_CHANNEL0, (divisor >> 8) & 0xFF);
 
+    console_write("Before register");
     register_interrupt_handler(32, timer_callback);
+    console_write("After register");
+
 }
 
 void sleep_test(void)
@@ -60,6 +71,7 @@ void draw_uptime(void) //NOTE: THIS IS ONLY DRAWING IN VGA!
     vga_print_at(":", 0x0F, 13, 0);
 
     vga_print_uint_at(seconds, 0x0F, 14, 0);
+
 }
 
 

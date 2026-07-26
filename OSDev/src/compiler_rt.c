@@ -1,6 +1,10 @@
 #include "compiler_rt.h"
 #include <stdint.h>
 
+//Installed with doom.
+//RT: Runtime. Compiler Runtime.
+//Uses 64-bit and 32-bit compatability
+
 typedef unsigned long long u64;
 typedef long long s64;
 

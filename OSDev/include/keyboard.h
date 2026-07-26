@@ -9,5 +9,6 @@ int keyboard_input_ready(void);
 char* keyboard_get_buffer(void);
 int keyboard_pop_event(uint8_t *scancode, int *pressed, int *extended);
 void keyboard_clear_events(void);
+void keyboard_init(void);
 
 #endif

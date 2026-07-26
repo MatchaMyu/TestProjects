@@ -1,10 +1,60 @@
 A log of creating an Operating System. Or at least, bits and pieces of an operating system.
 
+
 HOW TO:
 The OS includes a Makefile that, if exported, should run under the commands presuming the user is in the same folder that the makefile exists under:
 make clean
 make
 make run
 
-NOTE:
-This current version will not compile correctly as it does not include the badapple.bin or the doom1.wad headers, this is intentional for copyright reasons. A later build will operate without these.
+## KNOWN LIMITATIONS
+
+### Keyboard Support
+
+The keyboard driver currently targets older PS/2-style keyboards and does not support USB keyboards. As a result, booting EquineOS directly on physical hardware from a USB device may not work without additional configuration.
+
+The ISO image has been tested successfully in virtual machines.
+
+### Doom Resources
+
+For licensing reasons, the public build does not include `doom1_wad.h`.
+
+This file is a generated C header containing Doom WAD game data, created by converting a legally obtained WAD file into a C-compatible resource. It is referenced by the Doom `stdio.c` file.
+
+A dummy replacement header is included instead.
+
+Users who wish to run Doom must provide their own legally obtained WAD file and regenerate the resource file.
+
+### Bad Apple Resources
+
+The public build does not include the original Bad Apple animation data.
+
+The Bad Apple application converts animation frames into binary data. The included build uses a demonstration resource containing placeholder data.
+
+Only animation data is included. Audio is not included.
+
+## SPECIAL THANKS
+
+### doomgeneric
+
+EquineOS includes a port of doomgeneric using the C files and headers provided by the project.
+
+Source:
+https://github.com/ozkl/doomgeneric
+
+License:
+GNU General Public License v2.0
+
+### font8x8
+
+EquineOS uses font8x8 for bitmap font data.
+
+Source:
+https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h
+
+License:
+Public Domain
+
+---
+
+EquineOS does not distribute Doom WAD files or Bad Apple animation resources.

@@ -1,5 +1,8 @@
 #include "font8x8.h"
 
+//CREDIT: https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h
+//Used for printing graphics in 8x8 style
+
 const uint8_t font8x8[128][8] = {
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+0000 (nul)
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   // U+0001

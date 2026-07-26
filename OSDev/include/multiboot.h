@@ -18,21 +18,6 @@ typedef struct multiboot_info {
 
     uint32_t syms[4];
 
-    /*union {
-        struct {
-            uint32_t num;
-            uint32_t size;
-            uint32_t addr;
-            uint32_t shndx;
-        } aout_sym;
-        struct {
-            uint32_t num;
-            uint32_t size;
-            uint32_t addr;
-            uint32_t shndx;
-        } elf_sec;
-    } u;*/
-
     uint32_t mmap_length;
     uint32_t mmap_addr;
 
@@ -57,8 +42,7 @@ typedef struct multiboot_info {
     uint8_t  framebuffer_type;
     uint16_t reserved;
 
-    // there are more fields in the full spec, but this is enough for now
-} multiboot_info_t;
+} __attribute__((packed)) multiboot_info_t;
 
 typedef struct multiboot_memory_map {
     uint32_t size;       // size of the entry minus this field

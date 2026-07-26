@@ -6,6 +6,7 @@
 #include "isr.h"
 #include "irq.h"
 #include "vga.h"
+#include "pic.h"
 #include "timer.h"
 #include "keyboard.h"
 #include "shell/shell.h"
@@ -29,6 +30,10 @@ static inline void trigger_bp(void) {
 void print_multiboot_memory_map(multiboot_info_t* mbi); //Logic in memory.c
 
 void kernel_main(uint32_t magic, multiboot_info_t* mbi) { //Probably change magic
+
+if (magic != 0x2BADB002) {
+    serial_write("BAD MULTIBOOT MAGIC\n");
+}
 
     serial_init();
 
@@ -62,73 +67,111 @@ void kernel_main(uint32_t magic, multiboot_info_t* mbi) { //Probably change magi
     serial_write_hex32(mbi->framebuffer_pitch);
     serial_write("\n");
 
+    uint64_t address = mbi->framebuffer_addr;
+
+    serial_write("fb addr high: ");
+    serial_write_hex32((uint32_t)(address >> 32));
+    serial_write("\n");
+
     serial_write("fb addr low: ");
     serial_write_hex32((uint32_t)mbi->framebuffer_addr);
     serial_write("\n");
 
-    vga_print("Booting EquineOS...\n");
+/*
+//DEBUGGING: Enable this when you want to enable debugging and force GFX/Console Writes.
+int graphics_enabled = gfx_init(mbi); //Graphics checker in gfx
+    gfx_shell_init();
+    console_set_mode(CONSOLE_MODE_GFX);
+*/
+
+    console_write("Booting EquineOS...\n");
 
     idt_init();
-    vga_print("[OK] IDT\n");
+    console_write("[OK] IDT\n");
     dump_idtr();
 
     idt_install_exceptions();
-    vga_print("[OK] Install Exceptions\n");
+    console_write("[OK] Install Exceptions\n");
 
     irq_install();
-    vga_print("[OK] IRQ Install\n");
+    console_write("[OK] IRQ Install\n");
+
+    keyboard_init();
 
     __asm__ volatile ("sti");
-    vga_print("After STI Violatile\n");
+    console_write("After STI Violatile\n");
 
     __asm__ volatile ("int3");
-    vga_print("After INT3 Volatile\n");
+    console_write("After INT3 Volatile\n");
     vga_print("\n");
 
     print_multiboot_memory_map(mbi);
 
-    paging_init(mbi);
-    vga_print("Paging Successful\n");
+vga_print("page dir: ");
+vga_print_hex32_cursor(debug_page_directory);
+vga_print("\n");
 
-    vga_print("If this prints, you survived the boot load process!\n");
+vga_print("fb table: ");
+vga_print_hex32_cursor(debug_fb_page_table);
+vga_print("\n");
+
+    //console_write("Trying Paging\n");
+    paging_init(mbi);
+    //console_write("Paging Successful\n");
+
+//console_write("Framebuffer write survived\n");
+
+    console_write("If this prints, you survived the boot load process!\n");
 
 if (mbi->flags & MULTIBOOT_INFO_FRAMEBUFFER) {
     
-    vga_print("FB type: ");
-    vga_print_hex32_cursor(mbi->framebuffer_type);
-    vga_print("\n");
+    /*console_write("FB type: ");
+    console_print_hex32(mbi->framebuffer_type);
+    console_write("\n");
 
-    vga_print("FB bpp: ");
-    vga_print_hex32_cursor(mbi->framebuffer_bpp);
-    vga_print("\n");
+    console_write("FB bpp: ");
+    console_print_hex32(mbi->framebuffer_bpp);
+    console_write("\n");
 
-    vga_print("FB width: ");
-    vga_print_hex32_cursor(mbi->framebuffer_width);
-    vga_print("\n");
+    console_write("FB width: ");
+    console_print_hex32(mbi->framebuffer_width);
+    console_write("\n");
 
-    vga_print("FB height: ");
-    vga_print_hex32_cursor(mbi->framebuffer_height);
-    vga_print("\n");
+    console_write("FB height: ");
+    console_print_hex32(mbi->framebuffer_height);
+    console_write("\n");
 
-    vga_print("FB addr low: ");
-    vga_print_hex32_cursor((uint32_t)mbi->framebuffer_addr);
-    vga_print("\n");
+    console_write("FB addr low: ");
+    console_print_hex32((uint32_t)mbi->framebuffer_addr);
+    console_write("\n"); */
 }
-    timer_init(100);
-int graphics_enabled = gfx_init(mbi); //Graphics checker in gfx
 
+    //console_write("!!!Starting Timer\n");
+    timer_init(100);
+    //console_write("Timer Started!!!\n");
+
+console_write("PIC1: ");
+console_print_hex32(pic_get_pic1_mask());
+
+console_write("\nPIC2: ");
+console_print_hex32(pic_get_pic2_mask());
+
+int graphics_enabled = gfx_init(mbi); //Graphics checker in gfx
 if (graphics_enabled) {
+
     gfx_shell_init();
+
     console_set_mode(CONSOLE_MODE_GFX);
 } else {
     console_set_mode(CONSOLE_MODE_VGA);
+
     vga_clear(0x0F);
 
     draw_boot_screen();
     draw_uptime();
     shell_run();
+    
 }
-
     // halt forever
     while (1)
     {
@@ -155,6 +198,8 @@ static void dump_idtr() {
     vga_print_hex32_cursor((uint32_t)idtr.limit);
     vga_print("\n");
 }
+
+
 
 void isr3_handler_c(void) {
     vga_print_at("ISR3: int3 reached!", 0x0A, 0, 10);

@@ -18,20 +18,24 @@ BITS 32
 SECTION .multiboot
 ;graphics mode
 align 4
-dd 0x1BADB002
-dd 0x00000007            ; flags: align modules + memory info + video mode
-dd -(0x1BADB002 + 0x00000007) ; checksum ;change to 03 for text.
+MULTIBOOT_MAGIC    equ 0x1BADB002
+MULTIBOOT_FLAGS    equ 0x00000007
+MULTIBOOT_CHECKSUM equ -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)
 
-dd 0                       ; header_addr
-dd 0                       ; load_addr
-dd 0                       ; load_end_addr
-dd 0                       ; bss_end_addr
-dd 0                       ; entry_addr
+dd MULTIBOOT_MAGIC
+dd MULTIBOOT_FLAGS
+dd MULTIBOOT_CHECKSUM
 
-dd 0                       ; mode_type: 0 = graphics
-dd 640                    ; width
-dd 480                     ; height
-dd 32                      ; depth
+dd 0       ; header_addr
+dd 0       ; load_addr
+dd 0       ; load_end_addr
+dd 0       ; bss_end_addr
+dd 0       ; entry_addr
+
+dd 0       ; mode_type: 0 = linear graphics
+dd 0     ; width
+dd 0    ; height
+dd 0      ; bits per pixel
 
 SECTION .text
 global _start
@@ -40,6 +44,10 @@ extern kernel_main ; Calls kernel_main located in file "kernel.c"
 _start:
     ; clear interrupt flag
     cli
+
+    mov [saved_magic], eax
+    mov [saved_mbi], ebx
+
     lgdt [gdt_descriptor]
 
     ; call C code
@@ -58,8 +66,8 @@ flush_cs:
     mov esp, stack_top
 
     ; Call C kernel
-    push ebx ; Argument 2 (multiboot_info pointer)
-    push eax ; Argument 1 (multiboot magic)
+    push dword [saved_mbi]
+    push dword [saved_magic]
     call kernel_main
 
 ; The code above goes into kernel_main. If it returns here, the system is halted
@@ -85,6 +93,14 @@ gdt_descriptor:
     dd gdt_start                 ; base
 
 SECTION .bss
+
+align 4
+saved_magic:
+    resd 1
+
+saved_mbi:
+    resd 1
+
 align 16
 stack_bottom:
     resb 16384            ; 16 KiB stack
